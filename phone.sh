@@ -1,6 +1,12 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+
+if [ -f "$SCRIPT_DIR/refresh/phone-refresh.sh" ]; then
+    REFRESH="$SCRIPT_DIR/refresh/phone-refresh.sh"
+else
+    REFRESH="$SCRIPT_DIR/phone-refresh.sh"
+fi
 
 help() {
     echo "Usage: phone.sh <command>"
@@ -13,7 +19,7 @@ help() {
 
 case "$1" in
     refresh)
-        "$SCRIPT_DIR/phone-refresh.sh"
+        "$REFRESH"
         ;;
     tether)
         adb -d shell svc usb setFunctions rndis

@@ -1,9 +1,10 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+DEX="$SCRIPT_DIR/build/share/phone/classes.dex"
 
 printf "Pushing DEX... "
-adb push "$SCRIPT_DIR/src/out/classes.dex" /data/local/tmp/SetNetworkModePoll.dex > /dev/null 2>&1
+adb push "$DEX" /data/local/tmp/SetNetworkModePoll.dex > /dev/null 2>&1
 echo "done"
 
 SUBID=4

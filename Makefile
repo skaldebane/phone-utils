@@ -5,6 +5,8 @@ JAVA_OUT = build/share/phone
 PREFIX ?= $(HOME)/.local
 DATA_DIR = $(PREFIX)/share/phone
 BIN_DIR = $(PREFIX)/bin
+BASH_COMP_DIR = $(PREFIX)/share/bash-completion/completions
+ZSH_COMP_DIR = $(PREFIX)/share/zsh/site-functions
 
 all: $(DEX_OUT)
 
@@ -21,9 +23,13 @@ install: all
 	install -Dm 644 $(DEX_OUT) $(DATA_DIR)/classes.dex
 	install -Dm 755 phone.sh $(DATA_DIR)/phone.sh
 	ln -sf $(DATA_DIR)/phone.sh $(BIN_DIR)/phone
+	install -Dm 644 completions/bash/phone $(BASH_COMP_DIR)/phone
+	install -Dm 644 completions/zsh/_phone $(ZSH_COMP_DIR)/_phone
 
 uninstall:
 	rm -f $(BIN_DIR)/phone
+	rm -f $(BASH_COMP_DIR)/phone
+	rm -f $(ZSH_COMP_DIR)/_phone
 	rm -rf $(DATA_DIR)
 
 clean:

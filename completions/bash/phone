@@ -1,0 +1,12 @@
+_phone() {
+    local cur prev words cword
+    _init_completion || return
+    
+    case "$prev" in
+        phone)
+            COMPREPLY=($(compgen -W "refresh tether untether" -- "$cur"))
+            ;;
+    esac
+}
+
+complete -F _phone phone

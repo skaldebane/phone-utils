@@ -1,17 +1,26 @@
 ARTIFACT_DIR = build/.artifacts
 
+ANDROID_HOME ?= $(HOME)/Android/Sdk
+D8 ?= $(shell command -v d8 2>/dev/null)
+ifeq ($(D8),)
+D8 := $(shell ls -1d "$(ANDROID_HOME)"/build-tools/* 2>/dev/null | sort -V | tail -n1)/d8
+endif
+
 PREFIX ?= $(HOME)/.local
 DATA_DIR = $(PREFIX)/share/phone
 BIN_DIR = $(PREFIX)/bin
 BASH_COMP_DIR = $(PREFIX)/share/bash-completion/completions
 ZSH_COMP_DIR = $(PREFIX)/share/zsh/site-functions
 
-all: $(ARTIFACT_DIR)/classes.dex
+all: check-tools $(ARTIFACT_DIR)/classes.dex
+
+check-tools:
+	@test -x "$(D8)" || (echo "d8 not found. Set D8=/path/to/d8 or ANDROID_HOME=/path/to/Sdk"; exit 1)
 
 $(ARTIFACT_DIR)/classes.dex: refresh/SetNetworkModePoll.java
 	mkdir -p $(ARTIFACT_DIR)
 	javac -d $(ARTIFACT_DIR) -source 8 -target 8 $<
-	$(ANDROID_HOME)/build-tools/36.0.0/d8 --output $(ARTIFACT_DIR) $(ARTIFACT_DIR)/SetNetworkModePoll.class
+	$(D8) --output $(ARTIFACT_DIR) $(ARTIFACT_DIR)/SetNetworkModePoll.class
 
 install: all
 	mkdir -p $(BIN_DIR)
@@ -35,4 +44,4 @@ uninstall:
 clean:
 	rm -rf build
 
-.PHONY: all install run uninstall clean
+.PHONY: all check-tools install run uninstall clean

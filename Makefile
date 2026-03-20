@@ -1,6 +1,7 @@
 JAVA_SRC = refresh/SetNetworkModePoll.java
-DEX_OUT = build/share/phone/classes.dex
-JAVA_OUT = build/share/phone
+ARTIFACT_DIR = build/.artifacts
+DEX_OUT = $(ARTIFACT_DIR)/classes.dex
+JAVA_OUT = $(ARTIFACT_DIR)
 
 PREFIX ?= $(HOME)/.local
 DATA_DIR = $(PREFIX)/share/phone
@@ -15,16 +16,18 @@ $(DEX_OUT): $(JAVA_SRC)
 	javac -d $(JAVA_OUT) -source 8 -target 8 $<
 	$(ANDROID_HOME)/build-tools/36.0.0/d8 --output $(JAVA_OUT) $(JAVA_OUT)/SetNetworkModePoll.class
 
-dev: all
-	./phone.sh refresh
-
 install: all
+	mkdir -p $(BIN_DIR)
+	install -Dm 755 phone.sh $(DATA_DIR)/phone.sh
 	install -Dm 755 refresh/phone-refresh.sh $(DATA_DIR)/phone-refresh.sh
 	install -Dm 644 $(DEX_OUT) $(DATA_DIR)/classes.dex
-	install -Dm 755 phone.sh $(DATA_DIR)/phone.sh
-	ln -sf $(DATA_DIR)/phone.sh $(BIN_DIR)/phone
+	ln -sf $(abspath $(DATA_DIR)/phone.sh) $(BIN_DIR)/phone
 	install -Dm 644 completions/bash/phone $(BASH_COMP_DIR)/phone
 	install -Dm 644 completions/zsh/_phone $(ZSH_COMP_DIR)/_phone
+
+dev: all
+	$(MAKE) install PREFIX=build
+	./build/bin/phone refresh
 
 uninstall:
 	rm -f $(BIN_DIR)/phone
@@ -33,6 +36,6 @@ uninstall:
 	rm -rf $(DATA_DIR)
 
 clean:
-	rm -rf build/share/phone
+	rm -rf build
 
-.PHONY: all dev install uninstall clean
+.PHONY: all install dev uninstall clean

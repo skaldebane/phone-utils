@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
-DEX="$SCRIPT_DIR/build/share/phone/classes.dex"
+DEX="$SCRIPT_DIR/classes.dex"
 
 printf "Pushing DEX... "
 adb push "$DEX" /data/local/tmp/SetNetworkModePoll.dex > /dev/null 2>&1
@@ -13,10 +13,11 @@ wait_for_data_rat() {
     local rat=$1
     local name=$2
     local max_attempts=30
-    
+
     printf "Waiting for $name data... "
     for i in $(seq 1 $max_attempts); do
-        local state=$(adb shell su -c "dumpsys telephony.registry 2>/dev/null | grep 'subId=$SUBID phoneId=' | grep 'mVoiceRegState=0' | tail -1")
+        local state
+        state=$(adb shell su -c "dumpsys telephony.registry 2>/dev/null | grep 'subId=$SUBID phoneId=' | grep 'mVoiceRegState=0' | tail -1")
         if echo "$state" | grep -E "MobileDataRat=$rat" > /dev/null; then
             echo "connected!"
             return 0

@@ -4,7 +4,7 @@ _phone() {
     
     case "$prev" in
         phone)
-            COMPREPLY=($(compgen -W "refresh tether untether" -- "$cur"))
+            COMPREPLY=($(compgen -W "refresh tether mtp" -- "$cur"))
             ;;
     esac
 }

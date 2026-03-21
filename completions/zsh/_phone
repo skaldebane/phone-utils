@@ -4,5 +4,5 @@ _phone() {
     _values 'commands' \
         'refresh[Force network re-registration via 2G→LTE]' \
         'tether[Enable USB RNDIS tethering]' \
-        'untether[Disable tethering, set USB to MTP]'
+        'mtp[Disable tethering, set USB to MTP]'
 }

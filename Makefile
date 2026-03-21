@@ -17,23 +17,20 @@ all: check-tools $(ARTIFACT_DIR)/classes.dex
 check-tools:
 	@test -x "$(D8)" || (echo "d8 not found. Set D8=/path/to/d8 or ANDROID_HOME=/path/to/Sdk"; exit 1)
 
-$(ARTIFACT_DIR)/classes.dex: refresh/SetNetworkModePoll.java
+$(ARTIFACT_DIR)/classes.dex: src/java/SetNetworkModePoll.java
 	mkdir -p $(ARTIFACT_DIR)
 	javac -d $(ARTIFACT_DIR) -source 8 -target 8 $<
 	$(D8) --output $(ARTIFACT_DIR) $(ARTIFACT_DIR)/SetNetworkModePoll.class
 
 install: all
 	mkdir -p $(BIN_DIR)
-	install -Dm 755 phone.sh $(DATA_DIR)/phone.sh
-	install -Dm 755 refresh/phone-refresh.sh $(DATA_DIR)/phone-refresh.sh
+	install -Dm 755 src/shell/phone.sh $(DATA_DIR)/phone.sh
+	install -Dm 755 src/shell/refresh.sh $(DATA_DIR)/refresh.sh
+	install -Dm 755 src/shell/usb.sh $(DATA_DIR)/usb.sh
 	install -Dm 644 $(ARTIFACT_DIR)/classes.dex $(DATA_DIR)/classes.dex
 	ln -sf $(abspath $(DATA_DIR)/phone.sh) $(BIN_DIR)/phone
 	install -Dm 644 completions/bash/phone $(BASH_COMP_DIR)/phone
 	install -Dm 644 completions/zsh/_phone $(ZSH_COMP_DIR)/_phone
-
-run: all
-	$(MAKE) install PREFIX=build
-	./build/bin/phone refresh
 
 uninstall:
 	rm -f $(BIN_DIR)/phone
@@ -44,4 +41,4 @@ uninstall:
 clean:
 	rm -rf build
 
-.PHONY: all check-tools install run uninstall clean
+.PHONY: all check-tools install uninstall clean

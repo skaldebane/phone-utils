@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 help() {
-    echo "Usage: phone.sh <command>"
+    echo "Usage: phone <command>"
     echo ""
     echo "Commands:"
     echo "  refresh   Force network re-registration via 2G->LTE"

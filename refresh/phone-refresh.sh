@@ -4,8 +4,14 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 DEX="$SCRIPT_DIR/classes.dex"
 
 printf "Pushing DEX... "
-adb push "$DEX" /data/local/tmp/SetNetworkModePoll.dex > /dev/null 2>&1
-echo "done"
+push_output=$(adb push "$DEX" /data/local/tmp/SetNetworkModePoll.dex 2>&1)
+if [ $? -eq 0 ]; then
+    echo "done"
+else
+    echo "failed"
+    printf "\n%s\n" "$push_output"
+    exit 1
+fi
 
 SUBID=4
 

@@ -2,14 +2,35 @@
 
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/phone/hotspot.conf"
 
+trim() {
+    printf '%s' "$1" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
+run_wifi_cmd() {
+    output=$(adb -d shell "su -c '$1'" 2>&1)
+    return $?
+}
+
 load_config() {
     if [ ! -f "$CONFIG_FILE" ]; then
         return 1
     fi
 
-    while IFS='=' read -r key val || [ -n "$key" ]; do
-        key=$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-        val=$(echo "$val" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    HOTSPOT_SSID=""
+    HOTSPOT_PASSWORD=""
+    HOTSPOT_MODE=""
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        line=${line%%#*}
+        line=$(trim "$line")
+        [ -z "$line" ] && continue
+        case "$line" in
+            *=*) ;;
+            *) continue ;;
+        esac
+
+        key=$(trim "${line%%=*}")
+        val=$(trim "${line#*=}")
         case "$key" in
             ssid) HOTSPOT_SSID="$val" ;;
             password) HOTSPOT_PASSWORD="$val" ;;
@@ -28,8 +49,8 @@ probe_state() {
         HOTSPOT_STATE="off"
     fi
 
-    HOTSPOT_SSID=$(echo "$dump" | grep "StateMachine mode: StartedState" -A 15 | grep "mCurrentSoftApConfiguration.SSID:" | head -1 | sed 's/.*SSID: //' | tr -d '\r\n ')
-    HOTSPOT_CLIENTS=$(echo "$dump" | grep "StateMachine mode: StartedState" -B 5 | grep "getConnectedClientList().size():" | tail -1 | sed 's/.*size(): //' | tr -d '\r\n ')
+    HOTSPOT_SSID=$(printf '%s\n' "$dump" | awk '/StateMachine mode: StartedState/{started=1; next} started && /mCurrentSoftApConfiguration\.SSID:/{sub(/.*SSID: /,""); print; exit}' | tr -d '\r')
+    HOTSPOT_CLIENTS=$(printf '%s\n' "$dump" | awk '/StateMachine mode: StartedState/{started=1; next} started && /getConnectedClientList\(\)\.size\(\):/{sub(/.*size\(\): /,""); print; exit}' | tr -d '\r')
 }
 
 validate_config() {
@@ -55,7 +76,7 @@ validate_config() {
     fi
 
     if [ -n "$errors" ]; then
-        echo -e "$errors" >&2
+        printf '%b' "$errors" >&2
         return 1
     fi
     return 0
@@ -71,8 +92,7 @@ cmd_on() {
     probe_state
     if [ "$HOTSPOT_STATE" = "on" ]; then
         printf "Hotspot already running, turning off... "
-        output=$(adb -d shell "su -c 'cmd wifi stop-softap'" 2>&1)
-        if [ $? -eq 0 ]; then
+        if run_wifi_cmd "cmd wifi stop-softap"; then
             echo "done!"
         else
             echo "failed"
@@ -83,9 +103,9 @@ cmd_on() {
 
     printf "Turning hotspot on... "
     if [ "$mode" = "open" ]; then
-        output=$(adb -d shell "su -c 'cmd wifi start-softap \"$ssid\" open'" 2>&1)
+        run_wifi_cmd "cmd wifi start-softap \"$ssid\" open"
     else
-        output=$(adb -d shell "su -c 'cmd wifi start-softap \"$ssid\" $mode $password'" 2>&1)
+        run_wifi_cmd "cmd wifi start-softap \"$ssid\" $mode $password"
     fi
     if [ $? -eq 0 ]; then
         echo "done!"
@@ -105,8 +125,7 @@ cmd_on() {
 
 cmd_off() {
     printf "Turning hotspot off... "
-    output=$(adb -d shell "su -c 'cmd wifi stop-softap'" 2>&1)
-    if [ $? -eq 0 ]; then
+    if run_wifi_cmd "cmd wifi stop-softap"; then
         echo "done!"
     else
         echo "failed"
@@ -182,14 +201,26 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -s|--ssid)
+            if [ $# -lt 2 ]; then
+                echo "error: missing value for $1" >&2
+                exit 1
+            fi
             OVERRIDE_SSID="$2"
             shift 2
             ;;
         -p|--password)
+            if [ $# -lt 2 ]; then
+                echo "error: missing value for $1" >&2
+                exit 1
+            fi
             OVERRIDE_PASSWORD="$2"
             shift 2
             ;;
         -m|--mode)
+            if [ $# -lt 2 ]; then
+                echo "error: missing value for $1" >&2
+                exit 1
+            fi
             OVERRIDE_MODE="$2"
             shift 2
             ;;

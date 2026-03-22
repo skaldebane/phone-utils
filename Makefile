@@ -27,6 +27,7 @@ install: all
 	install -Dm 755 src/shell/phone.sh $(DATA_DIR)/phone.sh
 	install -Dm 755 src/shell/refresh.sh $(DATA_DIR)/refresh.sh
 	install -Dm 755 src/shell/usb.sh $(DATA_DIR)/usb.sh
+	install -Dm 755 src/shell/hotspot.sh $(DATA_DIR)/hotspot.sh
 	install -Dm 644 $(ARTIFACT_DIR)/classes.dex $(DATA_DIR)/classes.dex
 	ln -sf $(abspath $(DATA_DIR)/phone.sh) $(BIN_DIR)/phone
 	install -Dm 644 completions/bash/phone $(BASH_COMP_DIR)/phone

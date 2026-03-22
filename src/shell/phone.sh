@@ -9,6 +9,7 @@ help() {
     echo "  refresh   Force network re-registration via 2G->LTE"
     echo "  tether    Enable USB RNDIS tethering"
     echo "  mtp       Disable tethering, set USB to MTP"
+    echo "  hotspot   Manage WiFi hotspot (on/off/status/config)"
 }
 
 case "$1" in
@@ -17,6 +18,10 @@ case "$1" in
         ;;
     tether|mtp)
         "$SCRIPT_DIR/usb.sh" "$1"
+        ;;
+    hotspot)
+        shift
+        "$SCRIPT_DIR/hotspot.sh" "$@"
         ;;
     *)
         help

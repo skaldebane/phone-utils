@@ -1,9 +1,12 @@
 personal adb cli utilities.
 
 - `phone refresh`: refresh mobile network (switch to 2g then back to 4g)
-  - may require root
 - `phone tether`: switch usb function to tethering (rndis)
 - `phone mtp`: switch usb function to mtp
+- `phone hotspot`: manage mobile hotspot
+  - `hostpot [on|off]`: toggle hotspot
+  - `hotspot status`: show current hotspot ssid and client count, if on
+  - `hotspot config`: edit hotspot configuration (`~/.config/phone/hotspot.conf`)
 
 ---
 

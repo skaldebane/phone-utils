@@ -1,9 +1,53 @@
 #compdef phone
 
 _phone() {
-    _values 'commands' \
-        'refresh[Force network re-registration via 2G→LTE]' \
+    local cur prev
+    cur=${words[CURRENT]}
+    prev=${words[CURRENT-1]}
+
+    if [[ ${words[2]-} == hotspot ]]; then
+        if (( CURRENT <= 3 )); then
+            _values 'hotspot command' \
+                'on[Turn hotspot on]' \
+                'off[Turn hotspot off]' \
+                'status[Show hotspot status]' \
+                'config[Open hotspot config]'
+            return
+        fi
+
+        if [[ ${words[3]-} == on ]]; then
+            case "$prev" in
+                --mode|-m)
+                    _values 'hotspot mode' \
+                        'open[Open hotspot (no password)]' \
+                        'wpa2[WPA2 hotspot]' \
+                        'wpa3[WPA3 hotspot]' \
+                        'wpa3_transition[WPA3/WPA2 transitional mode]'
+                    return
+                    ;;
+                --ssid|-s|--password|-p)
+                    return
+                    ;;
+            esac
+
+            _values 'hotspot on option' \
+                '--ssid[Override SSID]' \
+                '-s[Override SSID]' \
+                '--password[Override password]' \
+                '-p[Override password]' \
+                '--mode[Override mode]' \
+                '-m[Override mode]'
+            return
+        fi
+
+        return
+    fi
+
+    _values 'phone command' \
+        'refresh[Force network re-registration via 2G->LTE]' \
         'tether[Enable USB RNDIS tethering]' \
         'mtp[Disable tethering, set USB to MTP]' \
-        'hotspot[Manage WiFi hotspot (on/off/status/config)]'
+        'hotspot[Manage WiFi hotspot]'
 }
+
+_phone "$@"

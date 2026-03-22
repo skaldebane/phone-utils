@@ -1,10 +1,38 @@
 _phone() {
     local cur prev words cword
     _init_completion || return
-    
-    case "$prev" in
-        phone)
-            COMPREPLY=($(compgen -W "refresh tether mtp hotspot" -- "$cur"))
+
+    local command=""
+    local hotspot_cmd=""
+
+    for word in "${words[@]}"; do
+        case "$word" in
+            refresh|tether|mtp|hotspot)
+                command="$word"
+                ;;
+            on|off|status|config)
+                hotspot_cmd="$word"
+                ;;
+        esac
+    done
+
+    case "$command" in
+        hotspot)
+            case "$hotspot_cmd" in
+                on)
+                    COMPREPLY=($(compgen -W "--ssid -s --password -p --mode -m" -- "$cur"))
+                    ;;
+                "")
+                    COMPREPLY=($(compgen -W "on off status config" -- "$cur"))
+                    ;;
+            esac
+            ;;
+        "")
+            case "$prev" in
+                phone)
+                    COMPREPLY=($(compgen -W "refresh tether mtp hotspot" -- "$cur"))
+                    ;;
+            esac
             ;;
     esac
 }
